@@ -1,6 +1,7 @@
 # import sys
 from fastapi import FastAPI
 from pymongo import MongoClient
+from fastapi.responses import JSONResponse
 app = FastAPI()
 
 
@@ -22,9 +23,16 @@ def read_root():
 
 @app.post("/add_data/")
 async def add_data(data: dict):
+    name = data.get("name")
+    date = data["date"]
     collection = db.get_collection("Users")
-    # result = collection.insert_one(data)
-    return data
+    if(name == "" or date == "" ):
+        error_message = "Unauthorized access"
+        return JSONResponse(content={"error": error_message}, status_code=401)
+    # collection.insert_one(data)
+    for item in data:
+        item["name"] = item["name"]
+    return name
 
 @app.post("/get_data/")
 async def get_data():
@@ -33,10 +41,11 @@ async def get_data():
 
     # Query the collection and convert ObjectId to string
     data = list(collection.find({}))
-    for item in data:
-        item["_id"] = str(item["_id"])  # Convert ObjectId to string
+    # for item in data:
+    #     item["_id"] = str(item["_id"])  # Convert ObjectId to string
 
-    return data
+    names = [item["name"] for item in data]
+    return names
 
 # a = 10
 # b = 11
